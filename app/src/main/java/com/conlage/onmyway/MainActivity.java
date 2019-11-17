@@ -3,9 +3,13 @@ package com.conlage.onmyway;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AnimationUtils;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,20 +23,29 @@ import com.bumptech.glide.Glide;
 import com.conlage.onmyway.api.API;
 import com.conlage.onmyway.api.VKPostDeleteResponse;
 import com.conlage.onmyway.api.VKPostResponse;
+import com.conlage.onmyway.system.Config;
 import com.conlage.onmyway.system.Constants;
+import com.conlage.onmyway.system.OnMyWay;
 import com.conlage.onmyway.system.OnMyWayService;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.vk.api.sdk.VK;
 import com.vk.api.sdk.auth.VKAccessToken;
 import com.vk.api.sdk.auth.VKAuthCallback;
 import com.vk.api.sdk.auth.VKScope;
 
 import org.jetbrains.annotations.NotNull;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private int selectedGroupID;
+    private int currentFragment; //-1 0 1 2 3
+
+    private FloatingActionButton fabSend;
+    private EditText etMessage1, etMessage2;
+    private TextView txtMessage1, txtMessage2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,12 +55,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (!isAuthorize()){
             authorize();
         }
-        startService();
     }
 
     @Override
     public void onClick(View v) {
         v.startAnimation(AnimationUtils.loadAnimation(this, R.anim.button_click));
+        showRightViews();
         switch (v.getId()){
             case R.id.btn1:
                 setTitle(Constants.GROUP_TITLE_1);
@@ -70,6 +83,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btn4:
                 setTitle(Constants.GROUP_TITLE_4);
                 selectedGroupID = Constants.GROUP_ID_4;
+
+                break;
+
+            case R.id.fab_send:
+                fabClick();
 
                 break;
         }
@@ -151,7 +169,73 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn3.setOnClickListener(this);
         btn4.setOnClickListener(this);
 
+        fabSend = findViewById(R.id.fab_send);
+        fabSend.setOnClickListener(this);
+
+        etMessage1 = findViewById(R.id.et_msg_1);
+        etMessage2 = findViewById(R.id.et_msg_2);
+
+        txtMessage1 = findViewById(R.id.txt_msg_1);
+        txtMessage2 = findViewById(R.id.txt_msg_2);
+
+        etMessage1.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                fabSend.setEnabled(!(TextUtils.isEmpty(charSequence) &&
+                        TextUtils.isEmpty(etMessage2.getText())));
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
+        etMessage2.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (TextUtils.isEmpty(charSequence) && TextUtils.isEmpty(etMessage1.getText())){
+                    fabSend.setEnabled(false);
+                }else{
+                    fabSend.setEnabled(true);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
         setBtnImages();
+        hideRightView();
+    }
+
+    private void hideRightView(){
+        fabSend.hide();
+        etMessage1.setVisibility(View.GONE);
+        etMessage2.setVisibility(View.GONE);
+        txtMessage1.setVisibility(View.GONE);
+        txtMessage2.setVisibility(View.GONE);
+    }
+
+    private void showRightViews(){
+        fabSend.show();
+        etMessage1.setVisibility(View.VISIBLE);
+        etMessage2.setVisibility(View.VISIBLE);
+        txtMessage1.setVisibility(View.VISIBLE);
+        txtMessage2.setVisibility(View.VISIBLE);
     }
 
     private void setBtnImages(){
@@ -159,10 +243,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ImageView ivBtn2 = findViewById(R.id.iv_btn_2);
         ImageView ivBtn3 = findViewById(R.id.iv_btn_3);
         ImageView ivBtn4 = findViewById(R.id.iv_btn_4);
-        Glide.with(MainActivity.this).load("https://sun9-62.userapi.com/c638525/v638525945/3555a/3Ry8buHurpM.jpg").into(ivBtn1);
-        Glide.with(MainActivity.this).load("https://sun9-23.userapi.com/c633220/v633220170/240eb/nfkzuZTtzT8.jpg").into(ivBtn2);
-        Glide.with(MainActivity.this).load("https://sun9-3.userapi.com/Es0QgDkg2U5jLlmveIGMPnFTeLndWmCokn-3vQ/w88V4lOEV9c.jpg").into(ivBtn3);
-        Glide.with(MainActivity.this).load("https://sun9-24.userapi.com/c850532/v850532211/1b868a/OPmZDkE6BcE.jpg").into(ivBtn4);
+        Glide.with(MainActivity.this).load(Constants.GROUP_IMAGE_1).into(ivBtn1);
+        Glide.with(MainActivity.this).load(Constants.GROUP_IMAGE_2).into(ivBtn2);
+        Glide.with(MainActivity.this).load(Constants.GROUP_IMAGE_3).into(ivBtn3);
+        Glide.with(MainActivity.this).load(Constants.GROUP_IMAGE_4).into(ivBtn4);
     }
 
     private void setTitle(String title){
@@ -171,9 +255,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvTitle.setTextSize(21f);
     }
 
+    //0 - off
+    //1 - on
+    //2 -
     private void setButtonView(int state){
 
     }
+
+    private void fabClick(){
+        String message1 = etMessage1.getText().toString();
+        String message2 = etMessage2.getText().toString();
+        int delay = delaySlider.get;
+        switch (currentFragment){
+            case 0:
+                OnMyWay.getInstance().group1 = new Config.Group(true, message1, message2, delay);
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+
+        }
+    }
+
 
 
     //Работа с сервисом//
