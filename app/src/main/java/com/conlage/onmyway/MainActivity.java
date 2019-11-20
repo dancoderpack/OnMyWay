@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,7 +39,8 @@ import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener,
+        SeekBar.OnSeekBarChangeListener {
 
     private int selectedGroupID;
     private int currentFragment; //-1 0 1 2 3
@@ -46,6 +48,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private FloatingActionButton fabSend;
     private EditText etMessage1, etMessage2;
     private TextView txtMessage1, txtMessage2;
+    private SeekBar seekBar;
+    private TextView seekBarTint;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +88,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 setTitle(Constants.GROUP_TITLE_4);
                 selectedGroupID = Constants.GROUP_ID_4;
 
+                break;
+
+            case R.id.btn5:
+                setTitle("Настройки");
+                seekBar.setVisibility(View.VISIBLE);
+                seekBarTint.setVisibility(View.VISIBLE);
+                hideRightView();
                 break;
 
             case R.id.fab_send:
@@ -163,11 +174,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         CardView btn2 = findViewById(R.id.btn2);
         CardView btn3 = findViewById(R.id.btn3);
         CardView btn4 = findViewById(R.id.btn4);
+        CardView btn5 = findViewById(R.id.btn5);
 
         btn1.setOnClickListener(this);
         btn2.setOnClickListener(this);
         btn3.setOnClickListener(this);
         btn4.setOnClickListener(this);
+        btn5.setOnClickListener(this);
 
         fabSend = findViewById(R.id.fab_send);
         fabSend.setOnClickListener(this);
@@ -218,6 +231,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
+        seekBar = findViewById(R.id.seek_bar_delay);
+        seekBar.setOnSeekBarChangeListener(this);
+
+        seekBarTint = findViewById(R.id.slider_tint);
+
         setBtnImages();
         hideRightView();
     }
@@ -265,10 +283,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void fabClick(){
         String message1 = etMessage1.getText().toString();
         String message2 = etMessage2.getText().toString();
-        int delay = delaySlider.get;
+//        int delay = delaySlider.get;
         switch (currentFragment){
             case 0:
-                OnMyWay.getInstance().group1 = new Config.Group(true, message1, message2, delay);
+//                OnMyWay.getInstance().group1 = new Config.Group(true, message1, message2, delay);
                 break;
             case 1:
                 break;
@@ -296,4 +314,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startService(stopIntent);
     }
 
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+        String text = "Сообщения отправятся повторно через " + i + " секунд";
+        seekBarTint.setText(text);
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+
+    }
 }

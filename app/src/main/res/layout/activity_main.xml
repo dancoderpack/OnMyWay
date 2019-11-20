@@ -112,12 +112,36 @@
         </FrameLayout>
 
         <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/btn4"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="16dp">
+
+            <ImageView
+                android:id="@+id/iv_btn_4"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop" />
+
+        </androidx.cardview.widget.CardView>
+
+
+    </FrameLayout>
+
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1">
 
             <androidx.cardview.widget.CardView
-                android:id="@+id/btn4"
+                android:id="@+id/btn5"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_gravity="center"
@@ -125,9 +149,11 @@
                 app:cardElevation="16dp">
 
                 <ImageView
-                    android:id="@+id/iv_btn_4"
+                    android:id="@+id/iv_btn_5"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_access_time_black_24dp"
                     android:scaleType="centerCrop" />
 
             </androidx.cardview.widget.CardView>
@@ -201,7 +227,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/linearLayout"
-        app:layout_constraintTop_toBottomOf="@+id/seek_bar_delay"
+        app:layout_constraintTop_toBottomOf="@+id/et_msg_2"
         app:srcCompat="@drawable/ic_send" />
 
     <SeekBar
@@ -209,19 +235,28 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
+        android:visibility="gone"
+        android:layout_marginTop="16dp"
+        android:theme="@style/SliderTheme"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/linearLayout"
-        app:layout_constraintTop_toBottomOf="@+id/et_msg_2" />
+        app:layout_constraintTop_toBottomOf="@+id/tv_title" />
 
     <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
+        android:id="@+id/slider_tint"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="TextView"
-        tools:layout_editor_absoluteX="210dp"
-        tools:layout_editor_absoluteY="352dp" />
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:visibility="gone"
+        android:gravity="center"
+        android:text="Сообщения отправятся повторно через 0 секунд"
+        android:textColor="#fff"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/linearLayout"
+        app:layout_constraintTop_toBottomOf="@+id/seek_bar_delay" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
