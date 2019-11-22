@@ -6,13 +6,14 @@ public class Config {
         private boolean isRun;
         private String message1;
         private String message2;
-        private int delay;
 
-        public Group(boolean isRun, String message1, String message2, int delay) {
+        private int postID1 = -1;
+        private int postID2 = -1;
+
+        public Group(boolean isRun, String message1, String message2) {
             this.isRun = isRun;
             this.message1 = message1;
             this.message2 = message2;
-            this.delay = delay;
         }
 
         public boolean isRun() {
@@ -39,12 +40,20 @@ public class Config {
             this.message2 = message2;
         }
 
-        public int getDelay() {
-            return delay;
+        public int getPostID1() {
+            return postID1;
         }
 
-        public void setDelay(int delay) {
-            this.delay = delay;
+        public void setPostID1(int postID1) {
+            this.postID1 = postID1;
+        }
+
+        public int getPostID2() {
+            return postID2;
+        }
+
+        public void setPostID2(int postID2) {
+            this.postID2 = postID2;
         }
     }
 

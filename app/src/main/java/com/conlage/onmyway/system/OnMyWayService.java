@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
@@ -38,24 +39,128 @@ public class OnMyWayService extends Service {
         return null;
     }
 
+    int periodValue = 10;
+
     @Override
     public void onCreate() {
         super.onCreate();
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         stateService = Constants.STATE_SERVICE.NOT_CONNECTED;
-        test();
+        update();
     }
 
-    private int ok = 0;
-
-    private void test(){
+    private void update(){
+        SharedPreferences sharedPreferences = getSharedPreferences("PeriodData", MODE_PRIVATE);
+        periodValue = sharedPreferences.getInt("PeriodValue", 30); //По default - 30 секунд
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                System.out.println(ok++);
-                test();
+                System.out.println("Обновление");
+
+                if (OnMyWay.getInstance().group1 != null && OnMyWay.getInstance().group1.isRun()){
+                    //Если первая группа запущена
+
+                    if (!OnMyWay.getInstance().group1.getMessage1().equals("")){
+                        //Если первое сообщение существует
+
+                        //Существует ли уже пост?
+                        if (OnMyWay.getInstance().group1.getPostID1() != -1){
+                            //Если да - удаляем его
+                            System.out.println("Удаляем пост с ID: " + OnMyWay.getInstance().group1.getPostID1());
+                        }
+
+                        //Отправляем сообщение
+                        System.out.println("Отправляем сообщение: " + OnMyWay.getInstance().group1.getMessage1());
+                    }
+
+                    //Аналогично для второго сообщения
+                    if (!OnMyWay.getInstance().group1.getMessage2().equals("")){
+                        if (OnMyWay.getInstance().group1.getPostID2() != -1){
+                            System.out.println("Удаляем пост с ID: " + OnMyWay.getInstance().group1.getPostID2());
+                        }
+                        System.out.println("Отправляем сообщение: " + OnMyWay.getInstance().group1.getMessage2());
+                    }
+                }
+
+                if (OnMyWay.getInstance().group2 != null && OnMyWay.getInstance().group2.isRun()){
+                    //Если первая группа запущена
+
+                    if (!OnMyWay.getInstance().group2.getMessage1().equals("")){
+                        //Если первое сообщение существует
+
+                        //Существует ли уже пост?
+                        if (OnMyWay.getInstance().group2.getPostID1() != -1){
+                            //Если да - удаляем его
+                            System.out.println("Удаляем пост с ID: " + OnMyWay.getInstance().group2.getPostID1());
+                        }
+
+                        //Отправляем сообщение
+                        System.out.println("Отправляем сообщение: " + OnMyWay.getInstance().group2.getMessage1());
+                    }
+
+                    //Аналогично для второго сообщения
+                    if (!OnMyWay.getInstance().group2.getMessage2().equals("")){
+                        if (OnMyWay.getInstance().group2.getPostID2() != -1){
+                            System.out.println("Удаляем пост с ID: " + OnMyWay.getInstance().group2.getPostID2());
+                        }
+                        System.out.println("Отправляем сообщение: " + OnMyWay.getInstance().group2.getMessage2());
+                    }
+                }
+
+                if (OnMyWay.getInstance().group3 != null && OnMyWay.getInstance().group3.isRun()){
+                    //Если первая группа запущена
+
+                    if (!OnMyWay.getInstance().group3.getMessage1().equals("")){
+                        //Если первое сообщение существует
+
+                        //Существует ли уже пост?
+                        if (OnMyWay.getInstance().group3.getPostID1() != -1){
+                            //Если да - удаляем его
+                            System.out.println("Удаляем пост с ID: " + OnMyWay.getInstance().group3.getPostID1());
+                        }
+
+                        //Отправляем сообщение
+                        System.out.println("Отправляем сообщение: " + OnMyWay.getInstance().group3.getMessage1());
+                    }
+
+                    //Аналогично для второго сообщения
+                    if (!OnMyWay.getInstance().group3.getMessage2().equals("")){
+                        if (OnMyWay.getInstance().group3.getPostID2() != -1){
+                            System.out.println("Удаляем пост с ID: " + OnMyWay.getInstance().group3.getPostID2());
+                        }
+                        System.out.println("Отправляем сообщение: " + OnMyWay.getInstance().group3.getMessage2());
+                    }
+                }
+
+                if (OnMyWay.getInstance().group4 != null && OnMyWay.getInstance().group4.isRun()){
+                    //Если первая группа запущена
+
+                    if (!OnMyWay.getInstance().group4.getMessage1().equals("")){
+                        //Если первое сообщение существует
+
+                        //Существует ли уже пост?
+                        if (OnMyWay.getInstance().group4.getPostID1() != -1){
+                            //Если да - удаляем его
+                            System.out.println("Удаляем пост с ID: " + OnMyWay.getInstance().group4.getPostID1());
+                        }
+
+                        //Отправляем сообщение
+                        System.out.println("Отправляем сообщение: " + OnMyWay.getInstance().group4.getMessage1());
+                    }
+
+                    //Аналогично для второго сообщения
+                    if (!OnMyWay.getInstance().group4.getMessage2().equals("")){
+                        if (OnMyWay.getInstance().group4.getPostID2() != -1){
+                            System.out.println("Удаляем пост с ID: " + OnMyWay.getInstance().group4.getPostID2());
+                        }
+                        System.out.println("Отправляем сообщение: " + OnMyWay.getInstance().group4.getMessage2());
+                    }
+                }
+
+
+                update();
             }
-        }, 1000);
+        }, periodValue * 1000);
     }
 
     @Override

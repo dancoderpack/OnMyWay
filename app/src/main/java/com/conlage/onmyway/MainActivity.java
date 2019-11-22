@@ -2,6 +2,7 @@ package com.conlage.onmyway;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -43,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SeekBar.OnSeekBarChangeListener {
 
     private int selectedGroupID;
-    private int currentFragment; //-1 0 1 2 3
+    private int currentFragment;
 
     private FloatingActionButton fabSend;
     private EditText etMessage1, etMessage2;
@@ -51,55 +52,56 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SeekBar seekBar;
     private TextView seekBarTint;
 
+    private int periodValue;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setupViews();
-        if (!isAuthorize()){
+        if (!isAuthorize()) {
             authorize();
         }
+        initPeriod();
+        startService();
     }
 
     @Override
     public void onClick(View v) {
         v.startAnimation(AnimationUtils.loadAnimation(this, R.anim.button_click));
         showRightViews();
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.btn1:
                 setTitle(Constants.GROUP_TITLE_1);
                 selectedGroupID = Constants.GROUP_ID_1;
-
+                setCurrentFragment(FRAGMENT_GROUP_1);
                 break;
 
             case R.id.btn2:
                 setTitle(Constants.GROUP_TITLE_2);
                 selectedGroupID = Constants.GROUP_ID_2;
-
+                setCurrentFragment(FRAGMENT_GROUP_2);
                 break;
 
             case R.id.btn3:
                 setTitle(Constants.GROUP_TITLE_3);
                 selectedGroupID = Constants.GROUP_ID_3;
-
+                setCurrentFragment(FRAGMENT_GROUP_3);
                 break;
 
             case R.id.btn4:
                 setTitle(Constants.GROUP_TITLE_4);
                 selectedGroupID = Constants.GROUP_ID_4;
-
+                setCurrentFragment(FRAGMENT_GROUP_4);
                 break;
 
             case R.id.btn5:
                 setTitle("Настройки");
-                seekBar.setVisibility(View.VISIBLE);
-                seekBarTint.setVisibility(View.VISIBLE);
-                hideRightView();
+                openSettings();
                 break;
 
             case R.id.fab_send:
                 fabClick();
-
                 break;
         }
     }
@@ -124,17 +126,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+        String text = "Сообщения отправятся повторно через " + i + " секунд";
+        seekBarTint.setText(text);
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+
+        if (seekBar.getProgress() <= 10) {
+            seekBar.setProgress(10);
+        }
+
+        SharedPreferences sharedPreferences = getSharedPreferences("PeriodData", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("PeriodValue", seekBar.getProgress());
+        editor.apply();
+    }
+
     //Работа с VK SDK//
 
-    private boolean isAuthorize(){
+    private boolean isAuthorize() {
         return VK.isLoggedIn();
     }
 
-    private void authorize(){
-        VK.login(this, new ArrayList<VKScope>(){{ add(VKScope.GROUPS); }});
+    private void authorize() {
+        VK.login(this, new ArrayList<VKScope>() {{
+            add(VKScope.GROUPS);
+        }});
     }
 
-    private void showConnectionErrorAlertDialog(){
+    private void showConnectionErrorAlertDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("Не удалось авторизоваться")
                 .setMessage("Произошла ошибка при попытке подключения к ВКонтакте. Попробуйте еще раз!")
@@ -148,7 +176,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .show();
     }
 
-    private void post(int groupID, String message){
+    private void post(int groupID, String message) {
         API.post(groupID, message, new API.OnPostResponseReceived() {
             @Override
             public void onReceive(VKPostResponse vkPostResponse) {
@@ -157,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-    private void deletePost(int groupID, int postID){
+    private void deletePost(int groupID, int postID) {
         API.deletePost(groupID, postID, new API.OnDeletePostResponseReceived() {
             @Override
             public void onReceive(VKPostDeleteResponse vkPostDeleteResponse) {
@@ -169,7 +197,85 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //Работа с View//
 
-    private void setupViews(){
+    private static final int FRAGMENT_NONE = -1;
+    private static final int FRAGMENT_GROUP_1 = 1;
+    private static final int FRAGMENT_GROUP_2 = 2;
+    private static final int FRAGMENT_GROUP_3 = 3;
+    private static final int FRAGMENT_GROUP_4 = 4;
+    private static final int FRAGMENT_SETTINGS = 5;
+
+    private void setCurrentFragment(int fragmentID) {
+        fabSend.setEnabled(false);
+        this.currentFragment = fragmentID;
+        switch (fragmentID) {
+            case FRAGMENT_GROUP_1:
+                if (OnMyWay.getInstance().group1 != null && OnMyWay.getInstance().group1.isRun()) {
+                    //Если группа запущена
+                    fabSend.setImageResource(R.drawable.ic_stop);
+                    fabSend.setEnabled(true);
+                } else {
+                    //Если группа не запущена
+                    fabSend.setImageResource(R.drawable.ic_send);
+                }
+                break;
+            case FRAGMENT_GROUP_2:
+                if (OnMyWay.getInstance().group2 != null && OnMyWay.getInstance().group2.isRun()) {
+                    //Если группа запущена
+                    fabSend.setImageResource(R.drawable.ic_stop);
+                    fabSend.setEnabled(true);
+                } else {
+                    //Если группа не запущена
+                    fabSend.setImageResource(R.drawable.ic_send);
+                }
+                break;
+            case FRAGMENT_GROUP_3:
+                if (OnMyWay.getInstance().group3 != null && OnMyWay.getInstance().group3.isRun()) {
+                    //Если группа запущена
+                    fabSend.setImageResource(R.drawable.ic_stop);
+                    fabSend.setEnabled(true);
+                } else {
+                    //Если группа не запущена
+                    fabSend.setImageResource(R.drawable.ic_send);
+                }
+                break;
+            case FRAGMENT_GROUP_4:
+                if (OnMyWay.getInstance().group4 != null && OnMyWay.getInstance().group4.isRun()) {
+                    //Если группа запущена
+                    fabSend.setImageResource(R.drawable.ic_stop);
+                    fabSend.setEnabled(true);
+                } else {
+                    //Если группа не запущена
+                    fabSend.setImageResource(R.drawable.ic_send);
+                }
+                break;
+        }
+        initEditTexts(fragmentID);
+    }
+
+    private void initEditTexts(int fragmentID) {
+        SharedPreferences sharedPreferences = getSharedPreferences("EditTextsData", MODE_PRIVATE);
+        String key1 = "ET_" + fragmentID + "_1";
+        String key2 = "ET_" + fragmentID + "_2";
+        etMessage1.setText(sharedPreferences.getString(key1, ""));
+        etMessage2.setText(sharedPreferences.getString(key2, ""));
+    }
+
+    private void initPeriod() {
+        SharedPreferences sharedPreferences = getSharedPreferences("PeriodData", MODE_PRIVATE);
+        periodValue = sharedPreferences.getInt("PeriodValue", 30); //По default - 30 секунд
+        seekBar.setProgress(periodValue);
+    }
+
+    private void openSettings() {
+        seekBar.setVisibility(View.VISIBLE);
+        seekBarTint.setVisibility(View.VISIBLE);
+        hideRightView();
+        SharedPreferences sharedPreferences = getSharedPreferences("PeriodData", MODE_PRIVATE);
+        periodValue = sharedPreferences.getInt("PeriodValue", 30); //По default - 30 секунд
+        seekBar.setProgress(periodValue);
+    }
+
+    private void setupViews() {
         CardView btn1 = findViewById(R.id.btn1);
         CardView btn2 = findViewById(R.id.btn2);
         CardView btn3 = findViewById(R.id.btn3);
@@ -218,9 +324,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (TextUtils.isEmpty(charSequence) && TextUtils.isEmpty(etMessage1.getText())){
+                if (TextUtils.isEmpty(charSequence) && TextUtils.isEmpty(etMessage1.getText())) {
                     fabSend.setEnabled(false);
-                }else{
+                } else {
                     fabSend.setEnabled(true);
                 }
             }
@@ -240,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         hideRightView();
     }
 
-    private void hideRightView(){
+    private void hideRightView() {
         fabSend.hide();
         etMessage1.setVisibility(View.GONE);
         etMessage2.setVisibility(View.GONE);
@@ -248,15 +354,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         txtMessage2.setVisibility(View.GONE);
     }
 
-    private void showRightViews(){
+    private void showRightViews() {
         fabSend.show();
         etMessage1.setVisibility(View.VISIBLE);
         etMessage2.setVisibility(View.VISIBLE);
         txtMessage1.setVisibility(View.VISIBLE);
         txtMessage2.setVisibility(View.VISIBLE);
+        TextView txtSelectGroup = findViewById(R.id.txt_select_group);
+        txtSelectGroup.setVisibility(View.GONE);
+        seekBar.setVisibility(View.GONE);
+        seekBarTint.setVisibility(View.GONE);
     }
 
-    private void setBtnImages(){
+    private void setBtnImages() {
         ImageView ivBtn1 = findViewById(R.id.iv_btn_1);
         ImageView ivBtn2 = findViewById(R.id.iv_btn_2);
         ImageView ivBtn3 = findViewById(R.id.iv_btn_3);
@@ -267,66 +377,73 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Glide.with(MainActivity.this).load(Constants.GROUP_IMAGE_4).into(ivBtn4);
     }
 
-    private void setTitle(String title){
+    private void setTitle(String title) {
         TextView tvTitle = findViewById(R.id.tv_title);
         tvTitle.setText(title);
-        tvTitle.setTextSize(21f);
+        tvTitle.setTextSize(title.equals("Настройки") ? 28f : 21f);
     }
 
-    //0 - off
-    //1 - on
-    //2 -
-    private void setButtonView(int state){
-
-    }
-
-    private void fabClick(){
+    private void fabClick() {
         String message1 = etMessage1.getText().toString();
         String message2 = etMessage2.getText().toString();
-//        int delay = delaySlider.get;
-        switch (currentFragment){
-            case 0:
-//                OnMyWay.getInstance().group1 = new Config.Group(true, message1, message2, delay);
-                break;
+
+        switch (currentFragment) {
             case 1:
+                if (OnMyWay.getInstance().group1 == null) {
+                    OnMyWay.getInstance().group1 = new Config.Group(true, message1, message2);
+                } else {
+                    OnMyWay.getInstance().group1 = new Config.Group(!OnMyWay.getInstance().group1.isRun(), message1, message2);
+                }
+                fabSend.setImageResource(OnMyWay.getInstance().group1.isRun() ? R.drawable.ic_stop : R.drawable.ic_send);
                 break;
             case 2:
+                if (OnMyWay.getInstance().group2 == null) {
+                    OnMyWay.getInstance().group2 = new Config.Group(true, message1, message2);
+                } else {
+                    OnMyWay.getInstance().group2 = new Config.Group(!OnMyWay.getInstance().group2.isRun(), message1, message2);
+                }
+                fabSend.setImageResource(OnMyWay.getInstance().group2.isRun() ? R.drawable.ic_stop : R.drawable.ic_send);
                 break;
             case 3:
+                if (OnMyWay.getInstance().group3 == null) {
+                    OnMyWay.getInstance().group3 = new Config.Group(true, message1, message2);
+                } else {
+                    OnMyWay.getInstance().group3 = new Config.Group(!OnMyWay.getInstance().group3.isRun(), message1, message2);
+                }
+                fabSend.setImageResource(OnMyWay.getInstance().group3.isRun() ? R.drawable.ic_stop : R.drawable.ic_send);
                 break;
-
+            case 4:
+                if (OnMyWay.getInstance().group4 == null) {
+                    OnMyWay.getInstance().group4 = new Config.Group(true, message1, message2);
+                } else {
+                    OnMyWay.getInstance().group4 = new Config.Group(!OnMyWay.getInstance().group4.isRun(), message1, message2);
+                }
+                fabSend.setImageResource(OnMyWay.getInstance().group4.isRun() ? R.drawable.ic_stop : R.drawable.ic_send);
+                break;
         }
-    }
 
+        SharedPreferences sharedPreferences = getSharedPreferences("EditTextsData", MODE_PRIVATE);
+        String key1 = "ET_" + currentFragment + "_1";
+        String key2 = "ET_" + currentFragment + "_2";
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(key1, message1);
+        editor.putString(key2, message2);
+        editor.apply();
+    }
 
 
     //Работа с сервисом//
 
-    private void startService(){
+    private void startService() {
         Intent startIntent = new Intent(MainActivity.this, OnMyWayService.class);
         startIntent.setAction(Constants.ACTION.START_ACTION);
         startService(startIntent);
     }
 
-    private void stopService(){
+    private void stopService() {
         Intent stopIntent = new Intent(MainActivity.this, OnMyWayService.class);
         stopIntent.setAction(Constants.ACTION.STOP_ACTION);
         startService(stopIntent);
     }
 
-    @Override
-    public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-        String text = "Сообщения отправятся повторно через " + i + " секунд";
-        seekBarTint.setText(text);
-    }
-
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-
-    }
 }
