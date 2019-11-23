@@ -44,7 +44,6 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener,
         SeekBar.OnSeekBarChangeListener {
 
-    private int selectedGroupID;
     private int currentFragment;
 
     private FloatingActionButton fabSend;
@@ -76,25 +75,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.btn1:
                 setTitle(Constants.GROUP_TITLE_1);
-                selectedGroupID = Constants.GROUP_ID_1;
                 setCurrentFragment(FRAGMENT_GROUP_1);
                 break;
 
             case R.id.btn2:
                 setTitle(Constants.GROUP_TITLE_2);
-                selectedGroupID = Constants.GROUP_ID_2;
                 setCurrentFragment(FRAGMENT_GROUP_2);
                 break;
 
             case R.id.btn3:
                 setTitle(Constants.GROUP_TITLE_3);
-                selectedGroupID = Constants.GROUP_ID_3;
                 setCurrentFragment(FRAGMENT_GROUP_3);
                 break;
 
             case R.id.btn4:
                 setTitle(Constants.GROUP_TITLE_4);
-                selectedGroupID = Constants.GROUP_ID_4;
                 setCurrentFragment(FRAGMENT_GROUP_4);
                 break;
 
@@ -161,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void authorize() {
         VK.login(this, new ArrayList<VKScope>() {{
+            add(VKScope.WALL);
             add(VKScope.GROUPS);
         }});
     }
@@ -177,12 +173,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //Работа с View//
 
-    private static final int FRAGMENT_NONE = -1;
     private static final int FRAGMENT_GROUP_1 = 1;
     private static final int FRAGMENT_GROUP_2 = 2;
     private static final int FRAGMENT_GROUP_3 = 3;
     private static final int FRAGMENT_GROUP_4 = 4;
-    private static final int FRAGMENT_SETTINGS = 5;
 
     private void setCurrentFragment(int fragmentID) {
         fabSend.setEnabled(false);

@@ -13,7 +13,6 @@ import static android.content.Context.MODE_PRIVATE;
 
 class ServiceHelper {
 
-
     private Context context;
     private MyAsync myAsync;
 
@@ -21,10 +20,8 @@ class ServiceHelper {
         this.context = context;
     }
 
-    private void post(int groupID, String message) {
-        API.post(groupID, message, vkPostResponse -> {
-
-        });
+    private void post(int groupID, String message, API.OnPostResponseReceived onPostResponseReceived) {
+        API.post(groupID, message, onPostResponseReceived);
     }
 
     private void deletePost(int groupID, int postID) {
@@ -45,7 +42,6 @@ class ServiceHelper {
             }
 
 
-
             System.out.println("Обновление");
 
             if (OnMyWay.getInstance().group1 != null && OnMyWay.getInstance().group1.isRun()) {
@@ -63,7 +59,8 @@ class ServiceHelper {
 
                     //Отправляем сообщение
                     System.out.println("Отправляем сообщение: " + OnMyWay.getInstance().group1.getMessage1());
-                    post(Constants.GROUP_ID_1, OnMyWay.getInstance().group1.getMessage1());
+                    post(Constants.GROUP_ID_1, OnMyWay.getInstance().group1.getMessage1(), vkPostResponse ->
+                            OnMyWay.getInstance().group1.setPostID1(vkPostResponse.getPostID()));
                 }
 
                 //Аналогично для второго сообщения
@@ -73,7 +70,8 @@ class ServiceHelper {
                         deletePost(Constants.GROUP_ID_1, OnMyWay.getInstance().group1.getPostID2());
                     }
                     System.out.println("Отправляем сообщение: " + OnMyWay.getInstance().group1.getMessage2());
-                    post(Constants.GROUP_ID_1, OnMyWay.getInstance().group1.getMessage2());
+                    post(Constants.GROUP_ID_1, OnMyWay.getInstance().group1.getMessage2(), vkPostResponse ->
+                            OnMyWay.getInstance().group1.setPostID2(vkPostResponse.getPostID()));
                 }
             }
 
@@ -92,7 +90,8 @@ class ServiceHelper {
 
                     //Отправляем сообщение
                     System.out.println("Отправляем сообщение: " + OnMyWay.getInstance().group2.getMessage1());
-                    post(Constants.GROUP_ID_2, OnMyWay.getInstance().group2.getMessage1());
+                    post(Constants.GROUP_ID_2, OnMyWay.getInstance().group2.getMessage1(), vkPostResponse ->
+                            OnMyWay.getInstance().group2.setPostID1(vkPostResponse.getPostID()));
                 }
 
                 //Аналогично для второго сообщения
@@ -102,7 +101,8 @@ class ServiceHelper {
                         deletePost(Constants.GROUP_ID_2, OnMyWay.getInstance().group2.getPostID2());
                     }
                     System.out.println("Отправляем сообщение: " + OnMyWay.getInstance().group2.getMessage2());
-                    post(Constants.GROUP_ID_2, OnMyWay.getInstance().group2.getMessage2());
+                    post(Constants.GROUP_ID_2, OnMyWay.getInstance().group2.getMessage2(), vkPostResponse ->
+                            OnMyWay.getInstance().group2.setPostID2(vkPostResponse.getPostID()));
                 }
             }
 
@@ -121,7 +121,8 @@ class ServiceHelper {
 
                     //Отправляем сообщение
                     System.out.println("Отправляем сообщение: " + OnMyWay.getInstance().group3.getMessage1());
-                    post(Constants.GROUP_ID_3, OnMyWay.getInstance().group3.getMessage1());
+                    post(Constants.GROUP_ID_3, OnMyWay.getInstance().group3.getMessage1(), vkPostResponse ->
+                            OnMyWay.getInstance().group3.setPostID1(vkPostResponse.getPostID()));
                 }
 
                 //Аналогично для второго сообщения
@@ -131,7 +132,8 @@ class ServiceHelper {
                         deletePost(Constants.GROUP_ID_3, OnMyWay.getInstance().group3.getPostID2());
                     }
                     System.out.println("Отправляем сообщение: " + OnMyWay.getInstance().group3.getMessage2());
-                    post(Constants.GROUP_ID_3, OnMyWay.getInstance().group3.getMessage2());
+                    post(Constants.GROUP_ID_3, OnMyWay.getInstance().group3.getMessage2(), vkPostResponse ->
+                            OnMyWay.getInstance().group3.setPostID2(vkPostResponse.getPostID()));
                 }
             }
 
@@ -150,7 +152,8 @@ class ServiceHelper {
 
                     //Отправляем сообщение
                     System.out.println("Отправляем сообщение: " + OnMyWay.getInstance().group4.getMessage1());
-                    post(Constants.GROUP_ID_4, OnMyWay.getInstance().group4.getMessage1());
+                    post(Constants.GROUP_ID_4, OnMyWay.getInstance().group4.getMessage1(), vkPostResponse ->
+                            OnMyWay.getInstance().group4.setPostID1(vkPostResponse.getPostID()));
                 }
 
                 //Аналогично для второго сообщения
@@ -160,12 +163,12 @@ class ServiceHelper {
                         deletePost(Constants.GROUP_ID_4, OnMyWay.getInstance().group4.getPostID2());
                     }
                     System.out.println("Отправляем сообщение: " + OnMyWay.getInstance().group4.getMessage2());
-                    post(Constants.GROUP_ID_4, OnMyWay.getInstance().group4.getMessage2());
+                    post(Constants.GROUP_ID_4, OnMyWay.getInstance().group4.getMessage2(), vkPostResponse ->
+                            OnMyWay.getInstance().group4.setPostID2(vkPostResponse.getPostID()));
                 }
             }
 
             if (OnMyWay.getInstance().isServiceWorked()) {
-                System.out.println("OnMyWay.getInstance().isServiceWorked()");
                 update();
             }
         }).run();

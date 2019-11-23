@@ -11,12 +11,15 @@ public class API {
         VK.execute(new VKPostRequest(groupID, message), new VKApiCallback<VKPostResponse>() {
             @Override
             public void success(VKPostResponse vkPostResponse) {
-                    onResponseReceived.onReceive(vkPostResponse);
+                onResponseReceived.onReceive(vkPostResponse);
+                System.out.println("Пост успешно создан: " + vkPostResponse.getPostID());
             }
 
             @Override
             public void fail(@NotNull Exception e) {
                 onResponseReceived.onReceive(new VKPostResponse(false, groupID, 0));
+                System.out.println("Ошибка, " + e.getLocalizedMessage());
+                e.printStackTrace();
             }
         });
     }

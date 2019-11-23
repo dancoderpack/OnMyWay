@@ -18,8 +18,9 @@ public class VKPostRequest extends VKRequest<VKPostResponse> {
 
     @Override
     public VKPostResponse parse(@NotNull JSONObject r) throws Exception {
+        System.out.println(r.toString());
         if (!r.has("error")){
-            int postID = r.getJSONObject("response").getInt("225826");
+            int postID = r.getJSONObject("response").getInt("post_id");
             return new VKPostResponse(true, groupID, postID);
         }else{
             return new VKPostResponse(false, groupID, 0);
