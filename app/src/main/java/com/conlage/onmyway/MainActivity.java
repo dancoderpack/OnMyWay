@@ -1,8 +1,12 @@
 package com.conlage.onmyway;
 
-import android.content.DialogInterface;
+import android.app.ActivityManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -22,13 +26,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import com.bumptech.glide.Glide;
-import com.conlage.onmyway.api.API;
-import com.conlage.onmyway.api.VKPostDeleteResponse;
-import com.conlage.onmyway.api.VKPostResponse;
 import com.conlage.onmyway.system.Config;
 import com.conlage.onmyway.system.Constants;
+import com.conlage.onmyway.service.MyForeGroundService;
 import com.conlage.onmyway.system.OnMyWay;
-import com.conlage.onmyway.system.OnMyWayService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.vk.api.sdk.VK;
 import com.vk.api.sdk.auth.VKAccessToken;
@@ -36,9 +37,9 @@ import com.vk.api.sdk.auth.VKAuthCallback;
 import com.vk.api.sdk.auth.VKScope;
 
 import org.jetbrains.annotations.NotNull;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener,
         SeekBar.OnSeekBarChangeListener {
@@ -53,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView seekBarTint;
 
     private int periodValue;
+
+    public static String id1 = "test_channel_01";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -166,34 +169,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         new AlertDialog.Builder(this)
                 .setTitle("Не удалось авторизоваться")
                 .setMessage("Произошла ошибка при попытке подключения к ВКонтакте. Попробуйте еще раз!")
-                .setPositiveButton("Попробовать еще раз", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        authorize();
-                    }
-                })
+                .setPositiveButton("Попробовать еще раз", (dialog, which) -> authorize())
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setCancelable(false)
                 .show();
     }
-
-    private void post(int groupID, String message) {
-        API.post(groupID, message, new API.OnPostResponseReceived() {
-            @Override
-            public void onReceive(VKPostResponse vkPostResponse) {
-
-            }
-        });
-    }
-
-    private void deletePost(int groupID, int postID) {
-        API.deletePost(groupID, postID, new API.OnDeletePostResponseReceived() {
-            @Override
-            public void onReceive(VKPostDeleteResponse vkPostDeleteResponse) {
-
-            }
-        });
-    }
-
 
     //Работа с View//
 
@@ -434,16 +414,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //Работа с сервисом//
 
-    private void startService() {
-        Intent startIntent = new Intent(MainActivity.this, OnMyWayService.class);
-        startIntent.setAction(Constants.ACTION.START_ACTION);
-        startService(startIntent);
+    private void startService(){
+        createChannel();  //needed for the persistent notification created in service.
+
+        //IntentService start with 5 random number toasts
+
+        Intent service = new Intent(getBaseContext(), MyForeGroundService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!isServiceRunning())
+                startForegroundService(service);
+        } else {
+            if (!isServiceRunning())
+                startService(service);
+        }
     }
 
-    private void stopService() {
-        Intent stopIntent = new Intent(MainActivity.this, OnMyWayService.class);
-        stopIntent.setAction(Constants.ACTION.STOP_ACTION);
-        startService(stopIntent);
+    private void createChannel() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+            NotificationChannel mChannel = new NotificationChannel(id1,
+                    getString(R.string.channel_name),  //name of the channel
+                    NotificationManager.IMPORTANCE_LOW);   //importance level
+            //important level: default is is high on the phone.  high is urgent on the phone.  low is medium, so none is low?
+            // Configure the notification channel.
+            mChannel.setDescription(getString(R.string.channel_description));
+            mChannel.enableLights(true);
+            // Sets the notification light color for notifications posted to this channel, if the device supports this feature.
+            mChannel.setShowBadge(true);
+            if (nm != null) {
+                nm.createNotificationChannel(mChannel);
+            }
+        }
+    }
+
+    private boolean isServiceRunning() {
+        boolean serviceRunning = false;
+        ActivityManager am = (ActivityManager) this.getSystemService(ACTIVITY_SERVICE);
+        assert am != null;
+        List<ActivityManager.RunningServiceInfo> l = am.getRunningServices(50);
+        for (ActivityManager.RunningServiceInfo runningServiceInfo : l) {
+            if (runningServiceInfo.service.getClassName().equals("MyForeGroundService")) {
+                serviceRunning = true;
+            }
+            return serviceRunning;
+        }
+        return false;
     }
 
 }
